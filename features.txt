@@ -1,0 +1,5 @@
+add rupes sumbol for products
+add admin feature to add products and manage products
+admin can manage the product shipping,orders and delivery
+user can able to add photo for profile, user can able to see the order details of ordered products,receipt,
+use mangodb for database
