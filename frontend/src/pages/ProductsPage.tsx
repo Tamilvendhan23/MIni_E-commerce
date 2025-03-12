@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Filter, SlidersHorizontal, ChevronDown, X } from 'lucide-react';
+import { Filter, SlidersHorizontal, ChevronDown, X, Star } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
 import { useProductStore } from '../stores/productStore';
 import { Product } from '../types';
@@ -17,11 +17,13 @@ const ProductsPage: React.FC = () => {
   const minPrice = searchParams.get('minPrice') || '';
   const maxPrice = searchParams.get('maxPrice') || '';
   const sortBy = searchParams.get('sort') || 'featured';
+  const ratingFilter = searchParams.get('rating') || '';
   
   // Local filter state
   const [selectedCategory, setSelectedCategory] = useState(categoryParam);
   const [priceRange, setPriceRange] = useState({ min: minPrice, max: maxPrice });
   const [selectedSort, setSelectedSort] = useState(sortBy);
+  const [selectedRating, setSelectedRating] = useState(ratingFilter);
   
   useEffect(() => {
     // Fetch products based on URL params
@@ -30,16 +32,23 @@ const ProductsPage: React.FC = () => {
       search: searchQuery,
       minPrice: minPrice ? Number(minPrice) : undefined,
       maxPrice: maxPrice ? Number(maxPrice) : undefined,
-      sort: sortBy
+      sort: sortBy,
+      rating: ratingFilter ? Number(ratingFilter) : undefined
     });
-  }, [categoryParam, searchQuery, minPrice, maxPrice, sortBy, fetchProducts]);
+  }, [categoryParam, searchQuery, minPrice, maxPrice, sortBy, ratingFilter, fetchProducts]);
   
   useEffect(() => {
-    setFilteredProducts(products);
-  }, [products]);
+    let filtered = [...products];
+    
+    // Apply rating filter
+    if (selectedRating) {
+      filtered = filtered.filter(product => product.rating >= Number(selectedRating));
+    }
+    
+    setFilteredProducts(filtered);
+  }, [products, selectedRating]);
   
   const applyFilters = () => {
-    // Update URL with filter params
     const params: Record<string, string> = {};
     
     if (selectedCategory) params.category = selectedCategory;
@@ -47,6 +56,7 @@ const ProductsPage: React.FC = () => {
     if (priceRange.min) params.minPrice = priceRange.min;
     if (priceRange.max) params.maxPrice = priceRange.max;
     if (selectedSort) params.sort = selectedSort;
+    if (selectedRating) params.rating = selectedRating;
     
     setSearchParams(params);
   };
@@ -55,6 +65,7 @@ const ProductsPage: React.FC = () => {
     setSelectedCategory('');
     setPriceRange({ min: '', max: '' });
     setSelectedSort('featured');
+    setSelectedRating('');
     setSearchParams({});
   };
   
@@ -109,6 +120,34 @@ const ProductsPage: React.FC = () => {
                       className="mr-2"
                     />
                     <span>{category}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+            
+            {/* Rating Filter */}
+            <div className="mb-6">
+              <h3 className="font-medium mb-2">Rating</h3>
+              <div className="space-y-2">
+                {[5, 4, 3, 2, 1].map((rating) => (
+                  <label key={rating} className="flex items-center cursor-pointer">
+                    <input
+                      type="radio"
+                      name="rating"
+                      value={rating}
+                      checked={selectedRating === rating.toString()}
+                      onChange={(e) => setSelectedRating(e.target.value)}
+                      className="mr-2"
+                    />
+                    <div className="flex items-center">
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`h-4 w-4 ${i < rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
+                        />
+                      ))}
+                      <span className="ml-2">{rating} & up</span>
+                    </div>
                   </label>
                 ))}
               </div>
@@ -175,7 +214,7 @@ const ProductsPage: React.FC = () => {
           </div>
           
           {/* Active Filters */}
-          {(selectedCategory || priceRange.min || priceRange.max || searchQuery) && (
+          {(selectedCategory || priceRange.min || priceRange.max || searchQuery || selectedRating) && (
             <div className="flex flex-wrap gap-2 mb-4">
               {selectedCategory && (
                 <div className="flex items-center bg-gray-100 rounded-full px-3 py-1 text-sm">
@@ -193,10 +232,26 @@ const ProductsPage: React.FC = () => {
                 </div>
               )}
               
+              {selectedRating && (
+                <div className="flex items-center bg-gray-100 rounded-full px-3 py-1 text-sm">
+                  <span>Rating: {selectedRating}+ Stars</span>
+                  <button 
+                    onClick={() => {
+                      setSelectedRating('');
+                      searchParams.delete('rating');
+                      setSearchParams(searchParams);
+                    }}
+                    className="ml-1"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
+              
               {(priceRange.min || priceRange.max) && (
                 <div className="flex items-center bg-gray-100 rounded-full px-3 py-1 text-sm">
                   <span>
-                    Price: {priceRange.min ? `$${priceRange.min}` : '$0'} - {priceRange.max ? `$${priceRange.max}` : 'Any'}
+                    Price: {priceRange.min ? `₹${priceRange.min}` : '₹0'} - {priceRange.max ? `₹${priceRange.max}` : 'Any'}
                   </span>
                   <button 
                     onClick={() => {

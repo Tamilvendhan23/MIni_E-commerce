@@ -1,10 +1,13 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Trash2, ShoppingBag, ArrowRight } from 'lucide-react';
 import { useCartStore } from '../stores/cartStore';
+import { useAuthStore } from '../stores/authStore';
 
 const CartPage: React.FC = () => {
+  const navigate = useNavigate();
   const { cart, removeFromCart, updateQuantity, clearCart } = useCartStore();
+  const { isAuthenticated } = useAuthStore();
   
   const subtotal = cart.reduce((total, item) => {
     const itemPrice = item.discount > 0 
@@ -21,6 +24,15 @@ const CartPage: React.FC = () => {
     if (newQuantity > 0) {
       updateQuantity(id, newQuantity);
     }
+  };
+
+  const handleCheckout = () => {
+    if (!isAuthenticated) {
+      // Redirect to login with return URL
+      navigate('/login?redirect=checkout');
+      return;
+    }
+    navigate('/checkout');
   };
 
   return (
@@ -82,13 +94,13 @@ const CartPage: React.FC = () => {
                             </h3>
                             {item.discount > 0 && (
                               <div className="mt-1 flex items-center">
-                                <span className="text-sm font-medium text-gray-900">${itemPrice.toFixed(2)}</span>
-                                <span className="ml-2 text-sm text-gray-500 line-through">${item.price.toFixed(2)}</span>
+                                <span className="text-sm font-medium text-gray-900">₹{itemPrice.toFixed(2)}</span>
+                                <span className="ml-2 text-sm text-gray-500 line-through">₹{item.price.toFixed(2)}</span>
                               </div>
                             )}
                           </div>
                           <div className="mt-2 sm:mt-0 text-right">
-                            <p className="text-base font-medium text-gray-900">${itemTotal.toFixed(2)}</p>
+                            <p className="text-base font-medium text-gray-900">₹{itemTotal.toFixed(2)}</p>
                           </div>
                         </div>
                         
@@ -143,32 +155,40 @@ const CartPage: React.FC = () => {
               <div className="space-y-4">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Subtotal</span>
-                  <span className="font-medium">${subtotal.toFixed(2)}</span>
+                  <span className="font-medium">₹{subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Shipping</span>
                   <span className="font-medium">
-                    {shipping === 0 ? 'Free' : `$${shipping.toFixed(2)}`}
+                    {shipping === 0 ? 'Free' : `₹${shipping.toFixed(2)}`}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Tax (7%)</span>
-                  <span className="font-medium">${tax.toFixed(2)}</span>
+                  <span className="font-medium">₹{tax.toFixed(2)}</span>
                 </div>
                 <div className="border-t border-gray-200 pt-4 flex justify-between">
                   <span className="font-semibold">Total</span>
-                  <span className="font-bold text-lg">${total.toFixed(2)}</span>
+                  <span className="font-bold text-lg">₹{total.toFixed(2)}</span>
                 </div>
               </div>
               
               <div className="mt-6">
-                <Link to="/checkout" className="btn btn-primary w-full">
-                  Proceed to Checkout
-                </Link>
+                <button 
+                  onClick={handleCheckout}
+                  className="btn btn-primary w-full"
+                >
+                  {isAuthenticated ? 'Proceed to Checkout' : 'Sign in to Checkout'}
+                </button>
+                {!isAuthenticated && (
+                  <p className="text-sm text-gray-500 mt-2 text-center">
+                    Please sign in to complete your purchase
+                  </p>
+                )}
               </div>
               
               <div className="mt-4 text-center text-sm text-gray-500">
-                <p>Free shipping on orders over $50</p>
+                <p>Free shipping on orders over ₹500</p>
               </div>
             </div>
           </div>

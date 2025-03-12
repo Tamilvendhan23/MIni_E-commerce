@@ -1,7 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, Heart } from 'lucide-react';
 import { useCartStore } from '../stores/cartStore';
+import { useWishlistStore } from '../stores/wishlistStore';
 import { Product } from '../types';
 
 interface ProductCardProps {
@@ -10,11 +11,22 @@ interface ProductCardProps {
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { addToCart } = useCartStore();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlistStore();
   
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     addToCart(product);
+  };
+
+  const handleWishlistToggle = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isInWishlist(product.id)) {
+      removeFromWishlist(product.id);
+    } else {
+      addToWishlist(product);
+    }
   };
 
   return (
@@ -31,6 +43,16 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               {product.discount}% OFF
             </div>
           )}
+          <button
+            onClick={handleWishlistToggle}
+            className={`absolute top-2 right-2 p-2 rounded-full ${
+              isInWishlist(product.id)
+                ? 'bg-red-500 text-white'
+                : 'bg-white text-gray-600 hover:text-red-500'
+            }`}
+          >
+            <Heart className="h-5 w-5" fill={isInWishlist(product.id) ? 'currentColor' : 'none'} />
+          </button>
         </div>
         <div className="p-4">
           <h3 className="text-lg font-semibold text-gray-800 mb-1">{product.name}</h3>
@@ -54,14 +76,14 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               {product.discount > 0 ? (
                 <>
                   <span className="text-lg font-bold text-gray-800">
-                    ${(product.price * (1 - product.discount / 100)).toFixed(2)}
+                    ₹{(product.price * (1 - product.discount / 100)).toFixed(2)}
                   </span>
                   <span className="text-sm text-gray-500 line-through ml-2">
-                    ${product.price.toFixed(2)}
+                    ₹{product.price.toFixed(2)}
                   </span>
                 </>
               ) : (
-                <span className="text-lg font-bold text-gray-800">${product.price.toFixed(2)}</span>
+                <span className="text-lg font-bold text-gray-800">₹{product.price.toFixed(2)}</span>
               )}
             </div>
             <button 

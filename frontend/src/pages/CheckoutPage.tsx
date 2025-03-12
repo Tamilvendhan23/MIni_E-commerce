@@ -21,7 +21,7 @@ const CheckoutPage: React.FC = () => {
     city: '',
     state: '',
     zipCode: '',
-    country: 'United States'
+    country: 'India'
   });
   
   // Payment information state
@@ -181,7 +181,7 @@ const CheckoutPage: React.FC = () => {
                       />
                     </div>
                     <div>
-                      <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                      <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb -1">
                         Email Address
                       </label>
                       <input
@@ -276,10 +276,10 @@ const CheckoutPage: React.FC = () => {
                         className="input"
                         required
                       >
+                        <option value="India">India</option>
                         <option value="United States">United States</option>
                         <option value="Canada">Canada</option>
                         <option value="United Kingdom">United Kingdom</option>
-                        <option value="Australia">Australia</option>
                       </select>
                     </div>
                   </div>
@@ -304,7 +304,7 @@ const CheckoutPage: React.FC = () => {
                           {subtotal > 50 ? (
                             <span className="text-green-600 font-medium">Free</span>
                           ) : (
-                            <span>$5.99</span>
+                            <span>₹5.99</span>
                           )}
                         </div>
                       </label>
@@ -322,7 +322,7 @@ const CheckoutPage: React.FC = () => {
                           <p className="text-sm text-gray-500">Delivery in 1-2 business days</p>
                         </div>
                         <div className="text-right">
-                          <span>$15.99</span>
+                          <span>₹15.99</span>
                         </div>
                       </label>
                     </div>
@@ -485,7 +485,7 @@ const CheckoutPage: React.FC = () => {
                               <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
                             </div>
                             <div className="text-right">
-                              <p className="font-medium">${itemTotal.toFixed(2)}</p>
+                              <p className="font-medium">₹{itemTotal.toFixed(2)}</p>
                             </div>
                           </div>
                         );
@@ -541,7 +541,7 @@ const CheckoutPage: React.FC = () => {
                         <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
                       </div>
                       <div className="text-right">
-                        <p className="font-medium">${(itemPrice * item.quantity).toFixed(2)}</p>
+                        <p className="font-medium">₹{(itemPrice * item.quantity).toFixed(2)}</p>
                       </div>
                     </div>
                   );
@@ -552,21 +552,21 @@ const CheckoutPage: React.FC = () => {
             <div className="space-y-4">
               <div className="flex justify-between">
                 <span className="text-gray-600">Subtotal</span>
-                <span className="font-medium">${subtotal.toFixed(2)}</span>
+                <span className="font-medium">₹{subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Shipping</span>
                 <span className="font-medium">
-                  {shippingCost === 0 ? 'Free' : `$${shippingCost.toFixed(2)}`}
+                  {shippingCost === 0 ? 'Free' : `₹${shippingCost.toFixed(2)}`}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Tax (7%)</span>
-                <span className="font-medium">${tax.toFixed(2)}</span>
+                <span className="font-medium">₹{tax.toFixed(2)}</span>
               </div>
               <div className="border-t border-gray-200 pt-4 flex justify-between">
                 <span className="font-semibold">Total</span>
-                <span className="font-bold text-lg">${total.toFixed(2)}</span>
+                <span className="font-bold text-lg">₹{total.toFixed(2)}</span>
               </div>
             </div>
           </div>

@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingCart, User, Menu, X, Search } from 'lucide-react';
+import { ShoppingCart, User, Menu, X, Search, Heart } from 'lucide-react';
 import { useCartStore } from '../stores/cartStore';
 import { useAuthStore } from '../stores/authStore';
+import { useWishlistStore } from '../stores/wishlistStore';
 
 const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
   const { cart } = useCartStore();
+  const { items: wishlistItems } = useWishlistStore();
   const { isAuthenticated, logout } = useAuthStore();
   
   const itemCount = cart.reduce((total, item) => total + item.quantity, 0);
@@ -56,6 +58,15 @@ const Navbar: React.FC = () => {
           
           {/* User Actions */}
           <div className="hidden md:flex items-center space-x-4">
+            <Link to="/wishlist" className="relative p-2">
+              <Heart className="h-6 w-6 text-gray-700" />
+              {wishlistItems.length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  {wishlistItems.length}
+                </span>
+              )}
+            </Link>
+            
             <Link to="/cart" className="relative p-2">
               <ShoppingCart className="h-6 w-6 text-gray-700" />
               {itemCount > 0 && (
@@ -73,6 +84,7 @@ const Navbar: React.FC = () => {
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20 hidden group-hover:block">
                   <Link to="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</Link>
                   <Link to="/orders" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Orders</Link>
+                  <Link to="/wishlist" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Wishlist</Link>
                   <button 
                     onClick={logout} 
                     className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -87,8 +99,17 @@ const Navbar: React.FC = () => {
           </div>
           
           {/* Mobile Menu Button */}
-          <div className="md:hidden flex items-center">
-            <Link to="/cart" className="relative p-2 mr-2">
+          <div className="md:hidden flex items-center space-x-2">
+            <Link to="/wishlist" className="relative p-2">
+              <Heart className="h-6 w-6 text-gray-700" />
+              {wishlistItems.length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  {wishlistItems.length}
+                </span>
+              )}
+            </Link>
+            
+            <Link to="/cart" className="relative p-2">
               <ShoppingCart className="h-6 w-6 text-gray-700" />
               {itemCount > 0 && (
                 <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
@@ -96,6 +117,7 @@ const Navbar: React.FC = () => {
                 </span>
               )}
             </Link>
+            
             <button onClick={toggleMenu} className="p-2">
               {isMenuOpen ? (
                 <X className="h-6 w-6 text-gray-700" />
@@ -124,6 +146,7 @@ const Navbar: React.FC = () => {
             <nav className="flex flex-col space-y-3">
               <Link to="/" className="text-gray-700 hover:text-blue-600 py-2">Home</Link>
               <Link to="/products" className="text-gray-700 hover:text-blue-600 py-2">Products</Link>
+              <Link to="/wishlist" className="text-gray-700 hover:text-blue-600 py-2">Wishlist</Link>
               {isAuthenticated ? (
                 <>
                   <Link to="/profile" className="text-gray-700 hover:text-blue-600 py-2">Profile</Link>

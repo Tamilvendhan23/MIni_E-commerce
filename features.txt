@@ -1,5 +1,18 @@
-add rupes sumbol for products
 add admin feature to add products and manage products
 admin can manage the product shipping,orders and delivery
 user can able to add photo for profile, user can able to see the order details of ordered products,receipt,
 use mangodb for database
+only login person and the person able to write review for only what products buy,other wise dont show the review write button
+add whistlist on navbar
+in filter ,rating also shown with funcitionality
+
+
+
+last edition link: 
+    1. https://bolt.new/~/sb1-l1gc3iqg --- whislist added ,rating
+    2.https://bolt.new/~/sb1-y6m9hiaw,,https://bolt.new/~/sb1-y6m9hiaw  --- whislist ,share, rating ,filter
+
+
+3.https://bolt.new/~/sb1-jr4grqar -- database
+
+https://bolt.new/~/sb1-suqj4xam ---  correct database 

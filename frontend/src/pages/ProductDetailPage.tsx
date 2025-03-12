@@ -1,29 +1,85 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ShoppingCart, Heart, Share2, Star, Truck, RotateCcw, Shield, ChevronRight } from 'lucide-react';
+import { 
+  ShoppingCart, 
+  Heart, 
+  Share2, 
+  Star, 
+  Truck, 
+  RotateCcw, 
+  Shield, 
+  ChevronRight,
+  Copy,
+  MessageCircle,
+  MessageSquare,
+  Send,
+  Check,
+  X
+} from 'lucide-react';
 import { useProductStore } from '../stores/productStore';
 import { useCartStore } from '../stores/cartStore';
+import { useWishlistStore } from '../stores/wishlistStore';
 import ProductCard from '../components/ProductCard';
 
 const ProductDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { getProductById, relatedProducts, isLoading } = useProductStore();
   const { addToCart } = useCartStore();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlistStore();
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const [activeTab, setActiveTab] = useState('description');
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [copySuccess, setCopySuccess] = useState(false);
   
   const product = getProductById(id || '');
   
   useEffect(() => {
-    // Reset state when product changes
     setQuantity(1);
     setSelectedImage(0);
     setActiveTab('description');
-    
-    // Scroll to top when product changes
     window.scrollTo(0, 0);
   }, [id]);
+
+  const handleWishlistToggle = () => {
+    if (!product) return;
+    
+    if (isInWishlist(product.id)) {
+      removeFromWishlist(product.id);
+    } else {
+      addToWishlist(product);
+    }
+  };
+
+  const handleShare = async (method: string) => {
+    if (!product) return;
+
+    const productUrl = window.location.href;
+    const shareText = `Check out ${product.name} on SwiftCart!\n${productUrl}`;
+
+    switch (method) {
+      case 'copy':
+        try {
+          await navigator.clipboard.writeText(productUrl);
+          setCopySuccess(true);
+          setTimeout(() => setCopySuccess(false), 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+        }
+        break;
+      case 'whatsapp':
+        window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, '_blank');
+        break;
+      case 'telegram':
+        window.open(`https://t.me/share/url?url=${encodeURIComponent(productUrl)}&text=${encodeURIComponent(`Check out ${product.name} on SwiftCart!`)}`, '_blank');
+        break;
+      case 'sms':
+        window.open(`sms:?body=${encodeURIComponent(shareText)}`, '_blank');
+        break;
+    }
+
+    setShowShareModal(false);
+  };
   
   if (isLoading) {
     return (
@@ -65,7 +121,7 @@ const ProductDetailPage: React.FC = () => {
       </div>
     );
   }
-  
+
   const handleAddToCart = () => {
     addToCart({ ...product, quantity });
   };
@@ -145,17 +201,17 @@ const ProductDetailPage: React.FC = () => {
             {product.discount > 0 ? (
               <div className="flex items-center">
                 <span className="text-2xl font-bold text-gray-900">
-                  ${(product.price * (1 - product.discount / 100)).toFixed(2)}
+                  ₹{(product.price * (1 - product.discount / 100)).toFixed(2)}
                 </span>
                 <span className="ml-2 text-gray-500 line-through">
-                  ${product.price.toFixed(2)}
+                  ₹{product.price.toFixed(2)}
                 </span>
                 <span className="ml-2 bg-red-100 text-red-800 text-xs font-semibold px-2 py-1 rounded">
                   {product.discount}% OFF
                 </span>
               </div>
             ) : (
-              <span className="text-2xl font-bold text-gray-900">${product.price.toFixed(2)}</span>
+              <span className="text-2xl font-bold text-gray-900">₹{product.price.toFixed(2)}</span>
             )}
           </div>
           
@@ -192,9 +248,17 @@ const ProductDetailPage: React.FC = () => {
               <ShoppingCart className="h-5 w-5 mr-2" />
               Add to Cart
             </button>
-            <button className="btn btn-outline flex items-center justify-center">
-              <Heart className="h-5 w-5 mr-2" />
-              Wishlist
+            <button 
+              onClick={handleWishlistToggle}
+              className={`btn btn-outline flex items-center justify-center ${
+                isInWishlist(product.id) ? 'text-red-500 border-red-500' : ''
+              }`}
+            >
+              <Heart 
+                className="h-5 w-5 mr-2"
+                fill={isInWishlist(product.id) ? 'currentColor' : 'none'}
+              />
+              {isInWishlist(product.id) ? 'In Wishlist' : 'Add to Wishlist'}
             </button>
           </div>
           
@@ -205,7 +269,7 @@ const ProductDetailPage: React.FC = () => {
                 <Truck className="h-5 w-5 text-gray-500 mr-2 mt-0.5" />
                 <div>
                   <h4 className="font-medium">Free Shipping</h4>
-                  <p className="text-sm text-gray-600">On orders over $50</p>
+                  <p className="text-sm text-gray-600">On orders over ₹50</p>
                 </div>
               </div>
               <div className="flex items-start">
@@ -228,11 +292,84 @@ const ProductDetailPage: React.FC = () => {
           {/* Share */}
           <div className="flex items-center mt-6">
             <span className="text-gray-600 mr-4">Share:</span>
-            <div className="flex space-x-2">
-              <button className="p-2 rounded-full hover:bg-gray-100">
+            <div className="relative">
+              <button 
+                onClick={() => setShowShareModal(true)}
+                className="p-2 rounded-full hover:bg-gray-100"
+              >
                 <Share2 className="h-5 w-5 text-gray-500" />
               </button>
+
+              {/* Share Modal */}
+              {showShareModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                  <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4">
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-lg font-semibold">Share Product</h3>
+                      <button 
+                        onClick={() => setShowShareModal(false)}
+                        className="p-1 hover:bg-gray-100 rounded-full"
+                      >
+                        <X className="h-5 w-5" />
+                      </button>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <button 
+                        onClick={() => handleShare('copy')}
+                        className="w-full flex items-center p-3 hover:bg-gray-50 rounded-lg transition-colors"
+                      >
+                        {copySuccess ? (
+                          <Check className="h-5 w-5 text-green-500 mr-3" />
+                        ) : (
+                          <Copy className="h-5 w-5 text-gray-500 mr-3" />
+                        )}
+                        <span>{copySuccess ? 'Link Copied!' : 'Copy Link'}</span>
+                      </button>
+                      
+                      <button 
+                        onClick={() => handleShare('whatsapp')}
+                        className="w-full flex items-center p-3 hover:bg-gray-50 rounded-lg transition-colors"
+                      >
+                        <MessageSquare className="h-5 w-5 text-green-500 mr-3" />
+                        <span>Share via WhatsApp</span>
+                      </button>
+                      
+                      <button 
+                        onClick={() => handleShare('telegram')}
+                        className="w-full flex items-center p-3 hover:bg-gray-50 rounded-lg transition-colors"
+                      >
+                        <Send className="h-5 w-5 text-blue-500 mr-3" />
+                        <span>Share via Telegram</span>
+                      </button>
+                      
+                      <button 
+                        onClick={() => handleShare('sms')}
+                        className="w-full flex items-center p-3 hover:bg-gray-50 rounded-lg transition-colors"
+                      >
+                        <MessageCircle className="h-5 w-5 text-gray-500 mr-3" />
+                        <span>Share via Messages</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
+
+            {/* Wishlist Button */}
+            <button
+              onClick={handleWishlistToggle}
+              className={`p-2 rounded-full ml-2 ${
+                isInWishlist(product?.id || '') 
+                  ? 'bg-red-50 text-red-500' 
+                  : 'hover:bg-gray-100 text-gray-500'
+              }`}
+            >
+              <Heart 
+                className="h-5 w-5" 
+                fill={isInWishlist(product?.id || '') ? 'currentColor' : 'none'} 
+              />
+            </button>
           </div>
         </div>
       </div>
@@ -289,7 +426,7 @@ const ProductDetailPage: React.FC = () => {
                   <tbody>
                     <tr className="border-t border-gray-200">
                       <th className="py-3 text-left text-gray-500 font-normal">Brand</th>
-                      <td className="py-3 text-gray-900">{product.brand || 'SwiftCart'}</td>
+                      <td className="py-3 text-gray-900">{product.brand || 'ShopEase'}</td>
                     </tr>
                     <tr className="border-t border-gray-200">
                       <th className="py-3 text-left text-gray-500 font-normal">Category</th>
@@ -321,7 +458,7 @@ const ProductDetailPage: React.FC = () => {
                     </tr>
                     <tr className="border-t border-gray-200">
                       <th className="py-3 text-left text-gray-500 font-normal">Shipping</th>
-                      <td className="py-3 text-gray-900">Free on orders over $50</td>
+                      <td className="py-3 text-gray-900">Free on orders over ₹50</td>
                     </tr>
                     <tr className="border-t border-gray-200">
                       <th className="py-3 text-left text-gray-500 font-normal">Returns</th>
