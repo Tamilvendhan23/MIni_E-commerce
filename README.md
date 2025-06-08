@@ -1,4 +1,4 @@
-# Mini E-Commerce Project 
+# Mini E-Commerce 
 
 Welcome to the Mini E-Commerce project! This project is a full-stack e-commerce application built with modern web technologies.
 
